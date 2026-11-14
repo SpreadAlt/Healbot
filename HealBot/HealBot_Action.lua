@@ -484,6 +484,64 @@ function HealBot_Action_HealthBar(button)
     return _G[barName.."Bar"];
 end
 
+local HealBot_AbsorbElapsed = 0
+local HealBot_AbsorbTexturePath = "Interface\\Buttons\\WHITE8X8"
+
+local function HealBot_Action_UpdateAbsorbs()
+    if type(UnitGetTotalAbsorbs) ~= "function" then return end
+    for unit, button in pairs(HealBot_Unit_Button) do
+        if button and button ~= "init" and button.IsShown and button.unit == unit and
+           button:IsShown() and UnitExists(unit) and not UnitIsDeadOrGhost(unit) and
+           (not HealBot_GUID[unit] or HealBot_GUID[unit] == button.guid) then
+            local absorb = UnitGetTotalAbsorbs(unit) or 0
+            local texture = button.hbAbsorbTexture
+            if absorb > 0 then
+                local maxHealth = UnitHealthMax(unit) or 0
+                local bar = HealBot_Unit_Bar1[unit] or HealBot_Action_HealthBar(button)
+                if maxHealth > 0 and bar and bar:IsShown() then
+                    local barWidth, barHeight = bar:GetWidth(), bar:GetHeight()
+                    if barWidth > 0 and barHeight > 0 then
+                        local health = math.max(0, math.min(UnitHealth(unit) or 0, maxHealth))
+                        local absorbFraction = math.min(absorb / maxHealth, 1)
+                        local healthFraction = health / maxHealth
+                        local endFraction = math.max(healthFraction, absorbFraction)
+                        local startFraction = endFraction - absorbFraction
+                        if not texture then
+                            texture = bar:CreateTexture(nil, "OVERLAY")
+                            texture:SetTexture(HealBot_AbsorbTexturePath)
+                            texture:SetVertexColor(0.42, 0.76, 1, 0.72)
+                            texture:SetDrawLayer("OVERLAY", -4)
+                            button.hbAbsorbTexture = texture
+                        end
+                        if button.hbAbsorbStart ~= startFraction or
+                           button.hbAbsorbWidth ~= absorbFraction or
+                           button.hbAbsorbBarWidth ~= barWidth or
+                           button.hbAbsorbBarHeight ~= barHeight then
+                            texture:ClearAllPoints()
+                            texture:SetPoint("LEFT", bar, "LEFT", startFraction * barWidth, 0)
+                            texture:SetWidth(absorbFraction * barWidth)
+                            texture:SetHeight(barHeight)
+                            button.hbAbsorbStart = startFraction
+                            button.hbAbsorbWidth = absorbFraction
+                            button.hbAbsorbBarWidth = barWidth
+                            button.hbAbsorbBarHeight = barHeight
+                        end
+                        texture:Show()
+                    elseif texture then
+                        texture:Hide()
+                    end
+                elseif texture then
+                    texture:Hide()
+                end
+            elseif texture then
+                texture:Hide()
+            end
+        elseif button and button ~= "init" and button.hbAbsorbTexture then
+            button.hbAbsorbTexture:Hide()
+        end
+    end
+end
+
 function HealBot_Action_HealthBar2(button)
     if not button then return end
     barName = button:GetName();
@@ -2427,6 +2485,7 @@ end
 
 function HealBot_Action_InsButtonStore(b)
     if not HealBot_ButtonStore[b] then
+        if b.hbAbsorbTexture then b.hbAbsorbTexture:Hide() end
         table.insert(HealBot_ButtonStore,b)
         HealBot_HoT_RemoveIconButton(b,true)
         if b.guid then b.guid=nil end
@@ -2823,6 +2882,11 @@ local lTimer,eTimer=0,GetTime()
 function HealBot_Action_OnUpdate(self)
     lTimer=GetTime()-eTimer
     eTimer=GetTime()
+    HealBot_AbsorbElapsed = HealBot_AbsorbElapsed + lTimer
+    if HealBot_AbsorbElapsed >= 0.1 then
+        HealBot_AbsorbElapsed = 0
+        HealBot_Action_UpdateAbsorbs()
+    end
     HealBot_Action_Timer1 = HealBot_Action_Timer1+lTimer
     HealBot_Action_Timer2 = HealBot_Action_Timer2+lTimer
     if HealBot_Action_Timer1>HB_Action_Timer1 then
