@@ -22,11 +22,8 @@
 		  <FontString name="HealBot_Error_Header" inherits="GameFontNormalLarge" text="HealBot">
 			<Anchors><Anchor point="TOP" relativePoint="TOP"><Offset><AbsDimension x="0" y="-15"/></Offset></Anchor></Anchors>
 		  </FontString>
-		  <FontString name="HealBot_Error_Header2" inherits="GameFontNormal" text="https://forum.sirus.su/threads/healbot.302348/">
+		  <FontString name="HealBot_Error_Header2" inherits="GameFontNormal" text="https://github.com/sirus-addons/HealBot">
 			<Anchors><Anchor point="TOP" relativePoint="TOP"><Offset><AbsDimension x="0" y="-40"/></Offset></Anchor></Anchors>
-		  </FontString>
-      <FontString name="HealBot_Error_Header3" inherits="GameFontNormal" text="https://discord.gg/addony-dlia-sirus-su-914079030125420565">
-			<Anchors><Anchor point="TOP" relativePoint="TOP"><Offset><AbsDimension x="0" y="-60"/></Offset></Anchor></Anchors>
 		  </FontString>
             <FontString name="HBIncHealsHeader" inherits="ChatFontNormal" text="HEALBOT_INFO_INCHEALINFO">
                 <Anchors><Anchor point="TOPLEFT" relativePoint="TOPLEFT"><Offset><AbsDimension x="28" y="-75"/></Offset></Anchor></Anchors>
